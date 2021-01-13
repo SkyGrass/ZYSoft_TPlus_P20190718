@@ -31,9 +31,15 @@ public class CTLHandler : IHttpHandler
 
     public class Body
     {
-        public List<string> Form_in { get; set; }
-        public List<string> Form_out { get; set; }
-        public List<string> Form_trans { get; set; }
+        public List<BillForm> Form_in { get; set; }
+        public List<BillForm> Form_out { get; set; }
+        public List<BillForm> Form_trans { get; set; }
+    }
+
+    public class BillForm
+    {
+        public string Id { get; set; }
+        public string EntryId { get; set; }
     }
 
     public class TResult
@@ -158,7 +164,7 @@ public class CTLHandler : IHttpHandler
         try
         {
             DataTable dt = ZYSoft.DB.BLL.Common.ExecuteDataTable
-            (string.Format(@"SELECT " + (ismark ? "'未打标'" : "'已打标'") + @"as isMark,T1.ID,T1.code,T1.voucherdate,t3.name Vendor,makerid,maker, t21.name cWhName,
+            (string.Format(@"SELECT " + (ismark ? "'未打标'" : "'已打标'") + @"as isMark,T1.ID,T2.id as entryId,T1.code,T1.voucherdate,t3.name Vendor,makerid,maker, t21.name cWhName,
                         t2.idinventory,t4.code cInvCode,t4.name cInvName,t4.specification ,t5.name cUnitName,
                         t2.quantity,t2.batch,t2.ProductionDate,t2.expiryDate,
                         t2.TaxPrice,t2.TaxAmount
@@ -192,7 +198,7 @@ public class CTLHandler : IHttpHandler
         try
         {
             DataTable dt = ZYSoft.DB.BLL.Common.ExecuteDataTable
-            (string.Format(@"SELECT " + (ismark ? "'未打标'" : "'已打标'") + @"as isMark, T1.ID,T1.code,T1.voucherdate,makerid,maker, 
+            (string.Format(@"SELECT " + (ismark ? "'未打标'" : "'已打标'") + @"as isMark, T1.ID,T2.id as entryId,T1.code,T1.voucherdate,makerid,maker, 
                             t21.name cOutWhName,t22.name cInWhName,
                             t2.idinventory,t4.code cInvCode,t4.name cInvName,t4.specification ,t5.name cUnitName,
                             t2.quantity,t2.batch,t2.ProductionDate,t2.expiryDate,
@@ -227,7 +233,7 @@ public class CTLHandler : IHttpHandler
         try
         {
             DataTable dt = ZYSoft.DB.BLL.Common.ExecuteDataTable
-            (string.Format(@"SELECT " + (ismark ? "'未打标'" : "'已打标'") + @"as isMark,T1.ID,T1.code,T1.voucherdate,makerid,maker, t21.name cWhName,
+            (string.Format(@"SELECT " + (ismark ? "'未打标'" : "'已打标'") + @"as isMark,T1.ID,T2.id as entryId,T1.code,T1.voucherdate,makerid,maker, t21.name cWhName,
                     t2.idinventory,t4.code cInvCode,t4.name cInvName,t4.specification ,t5.name cUnitName,
                     t2.quantity,t2.batch,t2.ProductionDate,t2.expiryDate,
                     t2.Price,t2.Amount
@@ -257,7 +263,8 @@ public class CTLHandler : IHttpHandler
 
     public bool BeforeSave(PostForm formData, ref string msg)
     {
-
+        /*2021-01-13客户放弃检查*/
+        return true;
         /*
          --进货单
 SELECT COUNT(1) FRecordNum FROM PU_PurchaseArrival_b WHERE idPurchaseArrivalDTO=1
@@ -269,8 +276,9 @@ SELECT COUNT(1) FRecordNum FROM ST_RDRecord_B T2  WHERE idRDRecordDTO=1
 
         try
         {
-            foreach (string f in formData.FormId.Form_in)
+            foreach (BillForm bill in formData.FormId.Form_in)
             {
+                string f = bill.Id;
                 DataTable _ret = ZYSoft.DB.BLL.Common.ExecuteDataTable(string.Format(@"SELECT t1.code FROM PU_PurchaseArrival t1 left join  PU_PurchaseArrival_b t2 
 on t1.ID = t2.idPurchaseArrivalDTO WHERE t2.idPurchaseArrivalDTO='{0}'", f));
                 if (_ret != null && !_ret.Rows.Count.Equals(1))
@@ -280,8 +288,9 @@ on t1.ID = t2.idPurchaseArrivalDTO WHERE t2.idPurchaseArrivalDTO='{0}'", f));
                 }
             };
 
-            foreach (string f in formData.FormId.Form_out)
+            foreach (BillForm bill in formData.FormId.Form_out)
             {
+                string f = bill.Id;
                 DataTable _ret = ZYSoft.DB.BLL.Common.ExecuteDataTable(string.Format(@"SELECT t1.code FROM ST_RDRecord t1 left join  ST_RDRecord_b t2 
 on t1.ID = t2.idRDRecordDTO WHERE t2.idRDRecordDTO='{0}'", f));
                 if (_ret != null && !_ret.Rows.Count.Equals(1))
@@ -292,8 +301,9 @@ on t1.ID = t2.idRDRecordDTO WHERE t2.idRDRecordDTO='{0}'", f));
 
             };
 
-            foreach (string f in formData.FormId.Form_trans)
+            foreach (BillForm bill in formData.FormId.Form_trans)
             {
+                string f = bill.Id;
                 DataTable _ret = ZYSoft.DB.BLL.Common.ExecuteDataTable(string.Format(@"SELECT t1.code FROM ST_TransVoucher t1 left join  ST_TransVoucher_B t2 
 on t1.ID = t2.idTransVoucherDTO WHERE t2.idTransVoucherDTO='{0}'", f));
                 if (_ret != null && !_ret.Rows.Count.Equals(1))
@@ -327,25 +337,26 @@ on t1.ID = t2.idTransVoucherDTO WHERE t2.idTransVoucherDTO='{0}'", f));
 
                 formData.FormId.Form_in.ForEach(f =>
                 {
-                    ls_sql.Add(string.Format(@"UPDATE PU_PurchaseArrival  SET makerid= '{0}',maker='{1}' WHERE ID={2}", formData.FMakerId, formData.FMaker, f));
-                    ls_sql.Add(string.Format(@"UPDATE PU_PurchaseArrival_B SET pubuserdefnvc1='{1}' WHERE idPurchaseArrivalDTO='{0}'", f, isMark ? "是" : "否"));
+                    ls_sql.Add(string.Format(@"UPDATE PU_PurchaseArrival  SET makerid= '{0}',maker='{1}' WHERE ID={2}", formData.FMakerId, formData.FMaker, f.Id));
+                    ls_sql.Add(string.Format(@"UPDATE PU_PurchaseArrival_B SET pubuserdefnvc1='{1}' WHERE idPurchaseArrivalDTO='{0}' and id='{2}'", f.Id, isMark ? "是" : "否", f.EntryId));
                     ls_sql.Add(string.Format(@"UPDATE ST_RDRecord set makerid='{0}',maker='{1}' where idsourcevouchertype=50 and sourceVoucherId ={2}",
-                        formData.FMakerId, formData.FMakerId, f));
-                    ls_sql.Add(string.Format(@"UPDATE ST_RDRecord_b SET pubuserdefnvc1='{1}' WHERE idsourcevouchertype=50 and sourceVoucherId={0}", f, isMark ? "是" : "否"));
+                        formData.FMakerId, formData.FMakerId, f.Id));
+                    ls_sql.Add(string.Format(@"UPDATE ST_RDRecord_b SET pubuserdefnvc1='{1}' WHERE idsourcevouchertype=50 and sourceVoucherId={0} and sourceVoucherDetailId ={2}",
+                        f.Id, isMark ? "是" : "否", f.EntryId));
                 });
 
                 formData.FormId.Form_out.ForEach(f =>
                 {
-                    ls_sql.Add(string.Format(@"UPDATE ST_RDRecord  SET makerid= '{0}',maker='{1}' WHERE ID={2}", formData.FMakerId, formData.FMaker, f));
-                    ls_sql.Add(string.Format(@"UPDATE ST_RDRecord_B SET pubuserdefnvc1='{1}' WHERE idRDRecordDTO='{0}'", f, isMark ? "是" : "否"));
+                    ls_sql.Add(string.Format(@"UPDATE ST_RDRecord  SET makerid= '{0}',maker='{1}' WHERE ID={2}", formData.FMakerId, formData.FMaker, f.Id));
+                    ls_sql.Add(string.Format(@"UPDATE ST_RDRecord_B SET pubuserdefnvc1='{1}' WHERE idRDRecordDTO='{0}'  and sourceVoucherDetailId ={2}", f.Id, isMark ? "是" : "否", f.EntryId));
                 });
 
                 formData.FormId.Form_trans.ForEach(f =>
                 {
-                    ls_sql.Add(string.Format(@"UPDATE ST_TransVoucher  SET makerid= '{0}',maker='{1}' WHERE ID={2}", formData.FMakerId, formData.FMaker, f));
-                    ls_sql.Add(string.Format(@"UPDATE ST_TransVoucher_B SET pubuserdefnvc1='{1}' WHERE idTransVoucherDTO='{0}'", f, isMark ? "是" : "否"));
-                    ls_sql.Add(string.Format(@"update ST_RDRecord set makerid='{0}',maker='{1}' where idsourcevouchertype=33 and sourceVoucherId ={2}", formData.FMakerId, formData.FMaker, f));
-                    ls_sql.Add(string.Format(@"UPDATE ST_RDRecord_b SET pubuserdefnvc1='{1}' WHERE idsourcevouchertype=33 and sourceVoucherId={0}", f, isMark ? "是" : "否"));
+                    ls_sql.Add(string.Format(@"UPDATE ST_TransVoucher  SET makerid= '{0}',maker='{1}' WHERE ID={2}", formData.FMakerId, formData.FMaker, f.Id));
+                    ls_sql.Add(string.Format(@"UPDATE ST_TransVoucher_B SET pubuserdefnvc1='{1}' WHERE idTransVoucherDTO='{0}'  and id='{2}'", f.Id, isMark ? "是" : "否", f.EntryId));
+                    ls_sql.Add(string.Format(@"update ST_RDRecord set makerid='{0}',maker='{1}' where idsourcevouchertype=33 and sourceVoucherId ={2}", formData.FMakerId, formData.FMaker, f.Id));
+                    ls_sql.Add(string.Format(@"UPDATE ST_RDRecord_b SET pubuserdefnvc1='{1}' WHERE idsourcevouchertype=33 and sourceVoucherId={0} and sourceVoucherDetailId ={2}", f.Id, isMark ? "是" : "否", f.EntryId));
                 });
 
 

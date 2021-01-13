@@ -12,8 +12,7 @@
     <title>销货单</title>
     <!-- 引入样式 -->
     <link rel="stylesheet" href="./css/element-ui-index.css" />
-    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
-    <%--<link rel="stylesheet" href="./css/index.css" />--%>
+    <link rel="stylesheet" href="./css/theme-chalk-index.css">
     <!-- 引入组件库 -->
     <%--<link rel="stylesheet" href="./assets/icon/iconfont.css" />--%>
     <link href="./css/tabulator.min.css" rel="stylesheet" />
@@ -195,8 +194,7 @@
      <script src="./js/moment.js"></script>
     <script src="./js/tableconfig.js"></script>
     <script src="./js/vue.js"></script> 
-    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
-    <%--<script src="js/element-ui-index.js"></script>--%>
+    <script src="js/element-ui-index.js"></script>--%>
     <script src="./js/tabulator.js"></script>
     <script src="./js/jquery.min.js"></script> 
     <script>

@@ -319,9 +319,9 @@
         saveBill() {
             var that = this;
 
-            var selectTableIn = this.grid_in.getSelectedData().map(function (f) { return f.ID });
-            var selectTableTrans = this.grid_trans.getSelectedData().map(function (f) { return f.ID });
-            var selectTableOut = this.grid_out.getSelectedData().map(function (f) { return f.ID });
+            var selectTableIn = this.grid_in.getSelectedData().map(function (f) { return { Id: f.ID, EntryId: f.entryId } });
+            var selectTableTrans = this.grid_trans.getSelectedData().map(function (f) { return { Id: f.ID, EntryId: f.entryId } });
+            var selectTableOut = this.grid_out.getSelectedData().map(function (f) { return { Id: f.ID, EntryId: f.entryId } });
 
             if (selectTableIn.length <= 0 && selectTableOut.length <= 0 && selectTableTrans.length <= 0) {
                 return that.$message({
@@ -452,7 +452,7 @@
             selectable: true, //make rows selectable
             data: this.tableData_out, //set initial table data
             columns: tableconf_out,
-            rowSelected: function (row) {
+            rowSelected1: function (row) {
                 var _id = row.getData()["ID"];
                 var code = row.getData()["code"];
                 if (that.form.FormId.Form_out.indexOf(_id) < 0) {
@@ -480,7 +480,7 @@
             columnHeaderVertAlign: "bottom",
             data: this.tableData_in, //set initial table data
             columns: tableconf_in,
-            rowSelected: function (row) {
+            rowSelected1: function (row) {
                 var _id = row.getData()["ID"];
                 var code = row.getData()["code"];
                 if (that.form.FormId.Form_in.indexOf(_id) < 0) {
@@ -509,7 +509,7 @@
             selectable: true, //make rows selectable
             data: this.tableData_trans, //set initial table data
             columns: tableconf_trans,
-            rowSelected: function (row) {
+            rowSelected1: function (row) {
                 var _id = row.getData()["ID"];
                 var code = row.getData()["code"];
                 if (that.form.FormId.Form_trans.indexOf(_id) < 0) {
