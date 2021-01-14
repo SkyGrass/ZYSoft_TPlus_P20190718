@@ -348,7 +348,7 @@ on t1.ID = t2.idTransVoucherDTO WHERE t2.idTransVoucherDTO='{0}'", f));
                 formData.FormId.Form_out.ForEach(f =>
                 {
                     ls_sql.Add(string.Format(@"UPDATE ST_RDRecord  SET makerid= '{0}',maker='{1}' WHERE ID={2}", formData.FMakerId, formData.FMaker, f.Id));
-                    ls_sql.Add(string.Format(@"UPDATE ST_RDRecord_B SET pubuserdefnvc1='{1}' WHERE idRDRecordDTO='{0}'  and sourceVoucherDetailId ={2}", f.Id, isMark ? "是" : "否", f.EntryId));
+                    ls_sql.Add(string.Format(@"UPDATE ST_RDRecord_B SET pubuserdefnvc1='{1}' WHERE idRDRecordDTO='{0}'  and ID ={2}", f.Id, isMark ? "是" : "否", f.EntryId));
                 });
 
                 formData.FormId.Form_trans.ForEach(f =>
