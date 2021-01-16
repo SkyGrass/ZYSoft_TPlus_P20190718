@@ -22,7 +22,8 @@
                     Form_in: [],
                     Form_out: [],
                     Form_trans: []
-                }
+                },
+                date: [new moment().startOf('month').format('YYYY-MM-DD'), new moment().endOf('month').format('YYYY-MM-DD')]
             },
             materialList: [],
             materialList_bark: [],
@@ -70,10 +71,10 @@
                     vm.loading = false;
                     vm.materialList = $.extend(true, [], vm.materialList_bark).filter(function (item) {
                         return (item.name.toLowerCase()
-                          .indexOf(query.toLowerCase()) > -1 ||
+                            .indexOf(query.toLowerCase()) > -1 ||
                             item.code.toLowerCase()
-                          .indexOf(query.toLowerCase()) > -1
-                            );
+                                .indexOf(query.toLowerCase()) > -1
+                        );
                     });
                 }, 150);
             } else {
@@ -87,10 +88,10 @@
                     vm.loading = false;
                     vm.markersList = $.extend(true, [], vm.markersList_bark).filter(function (item) {
                         return (item.name.toLowerCase()
-                          .indexOf(query.toLowerCase()) > -1 ||
+                            .indexOf(query.toLowerCase()) > -1 ||
                             item.code.toLowerCase()
-                          .indexOf(query.toLowerCase()) > -1
-                            );
+                                .indexOf(query.toLowerCase()) > -1
+                        );
                     });
                 }, 150);
             } else {
@@ -224,7 +225,7 @@
                 type: "POST",
                 url: "ctlhandler.ashx",
                 async: true,
-                data: { SelectApi: queryType, cid: that.queryForm.cid, batch: that.queryForm.batch, isMark: that.form.isMark },
+                data: { SelectApi: queryType, cid: that.queryForm.cid, batch: that.queryForm.batch, isMark: that.form.isMark, startdate: that.form.date[0], enddate: that.form.date[1] },
                 dataType: "json",
                 success: function (result) {
                     that[tableType] = [];
@@ -253,7 +254,7 @@
         },
         deSelectRow() {
             if (this.tableData.length > 0 &&
-            this.grid.getSelectedData().length > 0) {
+                this.grid.getSelectedData().length > 0) {
                 vm.grid.getSelectedRows().forEach(function (row) {
                     row.deselect();
                 })
@@ -261,6 +262,7 @@
         },
         beforeSave() {
             var that = this;
+            return true;
             var selectTableIn_All = this.grid_in.getSelectedData()
             var selectTableIn = this.grid_in.getSelectedData().map(function (f) { return f.ID });
             var setTableIn = this.unique((selectTableIn));
@@ -277,8 +279,8 @@
 
             var result = false;
             result = (selectTableIn.length == setTableIn.length &&
-            selectTableOut.length == setTableOut.length &&
-            selectTableTrans.length == setTableTrans.length);
+                selectTableOut.length == setTableOut.length &&
+                selectTableTrans.length == setTableTrans.length);
             if (!result) {
                 if (selectTableIn.length != setTableIn.length) {
 
@@ -343,62 +345,62 @@
                     + selectTableIn.length + '张进货单'
                     + selectTableTrans.length + '张调拨单'
                     + selectTableOut.length + '张材料出库单, 是否继续?', '提示', {
-                        confirmButtonText: '确定',
-                        cancelButtonText: '取消',
-                        type: 'warning'
-                    }).then(function () {
-                        that.fullscreenLoading = true;
-                        $.ajax({
-                            type: "POST",
-                            url: "ctlhandler.ashx",
-                            async: true,
-                            data: {
-                                SelectApi: "SaveBill",
-                                formData: JSON.stringify(
-                                    Object.assign(that.form, {
-                                        FormId:
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(function () {
+                    that.fullscreenLoading = true;
+                    $.ajax({
+                        type: "POST",
+                        url: "ctlhandler.ashx",
+                        async: true,
+                        data: {
+                            SelectApi: "SaveBill",
+                            formData: JSON.stringify(
+                                Object.assign(that.form, {
+                                    FormId:
                                     {
                                         Form_in: selectTableIn,
                                         Form_out: selectTableOut,
                                         Form_trans: selectTableTrans
                                     }
-                                    })
-                                )
-                            },
-                            dataType: "json",
-                            success: function (result) {
-                                if (result.status == "success") {
-                                    that.$message({
-                                        type: 'success',
-                                        message: result.msg,
-                                        onClose: function () {
-                                            that.initBill();
-                                        }
-                                    });
-                                } else {
-                                    that.$message({
-                                        message: result.msg,
-                                        type: 'error'
-                                    });
-                                }
-                                that.fullscreenLoading = false;
-                            },
-                            error: function () {
-                                that.fullscreenLoading = false;
+                                })
+                            )
+                        },
+                        dataType: "json",
+                        success: function (result) {
+                            if (result.status == "success") {
                                 that.$message({
-                                    message: '发生异常,请刷新重试!!',
+                                    type: 'success',
+                                    message: result.msg,
+                                    onClose: function () {
+                                        that.initBill();
+                                    }
+                                });
+                            } else {
+                                that.$message({
+                                    message: result.msg,
                                     type: 'error'
                                 });
                             }
-                        });
-                    }).catch(function (e) {
-                        console.log(e)
-                        that.$message({
-                            type: 'info',
-                            message: '已取消',
-                            onClose: function () { }
-                        });
+                            that.fullscreenLoading = false;
+                        },
+                        error: function () {
+                            that.fullscreenLoading = false;
+                            that.$message({
+                                message: '发生异常,请刷新重试!!',
+                                type: 'error'
+                            });
+                        }
                     });
+                }).catch(function (e) {
+                    console.log(e)
+                    that.$message({
+                        type: 'info',
+                        message: '已取消',
+                        onClose: function () { }
+                    });
+                });
             }
         },
         unique(arr) {

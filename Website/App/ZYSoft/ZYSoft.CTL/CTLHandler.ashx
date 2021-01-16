@@ -74,19 +74,25 @@ public class CTLHandler : IHttpHandler
                     string cid = context.Request.Form["cid"] ?? "";
                     string batch = context.Request.Form["batch"] ?? "";
                     bool ismark = (context.Request.Form["isMark"] ?? "true").Equals("true") ? true : false;
-                    result = GetRecordIn(cid, batch, ismark);
+                    string startdate = context.Request.Form["startdate"] ?? "";
+                    string enddate = context.Request.Form["enddate"] ?? "";
+                    result = GetRecordIn(cid, batch, ismark, startdate, enddate);
                     break;
                 case "getrecordtrans":
                     cid = context.Request.Form["cid"] ?? "";
                     batch = context.Request.Form["batch"] ?? "";
                     ismark = (context.Request.Form["isMark"] ?? "true").Equals("true") ? true : false;
-                    result = GetRecordTrans(cid, batch, ismark);
+                    startdate = context.Request.Form["startdate"] ?? "";
+                    enddate = context.Request.Form["enddate"] ?? "";
+                    result = GetRecordTrans(cid, batch, ismark, startdate, enddate);
                     break;
                 case "getrecordout":
                     cid = context.Request.Form["cid"] ?? "";
                     batch = context.Request.Form["batch"] ?? "";
                     ismark = (context.Request.Form["isMark"] ?? "true").Equals("true") ? true : false;
-                    result = GetRecordOut(cid, batch, ismark);
+                    startdate = context.Request.Form["startdate"] ?? "";
+                    enddate = context.Request.Form["enddate"] ?? "";
+                    result = GetRecordOut(cid, batch, ismark, startdate, enddate);
                     break;
                 case "savebill":
                     string formData = context.Request.Form["formData"] ?? "";
@@ -158,7 +164,7 @@ public class CTLHandler : IHttpHandler
 
 
     /*查询进货单数据*/
-    public string GetRecordIn(string cid, string batch, bool ismark)
+    public string GetRecordIn(string cid, string batch, bool ismark, string startdate, string enddate)
     {
         var list = new List<Result>();
         try
@@ -173,7 +179,11 @@ public class CTLHandler : IHttpHandler
                         LEFT JOIN dbo.AA_Partner t3 ON t1.idpartner=t3.id
                         LEFT JOIN dbo.AA_Inventory t4 ON t2.idinventory=t4.id
                         LEFT JOIN dbo.AA_Unit T5 ON T4.idunit=T5.ID
-                        WHERE ISNULL(t2.pubuserdefnvc1,'') {2} AND t2.idinventory='{0}' {1}", cid, (!string.IsNullOrEmpty(batch) ? " AND t2.batch='" + batch + "'" : ""), ismark ? "<>'是'" : "='是'"));
+                        WHERE ISNULL(t2.pubuserdefnvc1,'') {2} AND t2.idinventory='{0}' {1} {3} {4}", cid,
+                        (!string.IsNullOrEmpty(batch) ? " AND t2.batch='" + batch + "'" : ""),
+                        ismark ? "<>'是'" : "='是'",
+                        !string.IsNullOrEmpty(startdate) ? " AND t1.voucherdate >='" + startdate + " 00:00:00'" : "",
+                        !string.IsNullOrEmpty(enddate) ? " AND t1.voucherdate <='" + enddate + " 23:59:59'" : ""));
             return JsonConvert.SerializeObject(new
             {
                 status = dt.Rows.Count > 0 ? "success" : "error",
@@ -192,7 +202,7 @@ public class CTLHandler : IHttpHandler
         }
     }
 
-    public string GetRecordTrans(string cid, string batch, bool ismark)
+    public string GetRecordTrans(string cid, string batch, bool ismark, string startdate, string enddate)
     {
         var list = new List<Result>();
         try
@@ -208,7 +218,11 @@ public class CTLHandler : IHttpHandler
                             LEFT JOIN dbo.AA_Warehouse t22 ON t1.idinwarehouse=t22.id
                             LEFT JOIN dbo.AA_Inventory t4 ON t2.idinventory=t4.id
                             LEFT JOIN dbo.AA_Unit T5 ON T4.idunit=T5.ID
-                            WHERE ISNULL(t2.pubuserdefnvc1,'') {2} AND t2.idinventory='{0}' {1}", cid, (!string.IsNullOrEmpty(batch) ? " AND t2.batch='" + batch + "'" : ""), ismark ? "<>'是'" : "='是'"));
+                            WHERE ISNULL(t2.pubuserdefnvc1,'') {2} AND t2.idinventory='{0}' {1} {3} {4}", cid,
+                            (!string.IsNullOrEmpty(batch) ? " AND t2.batch='" + batch + "'" : ""),
+                            ismark ? "<>'是'" : "='是'",
+                            !string.IsNullOrEmpty(startdate) ? " AND t1.voucherdate >='" + startdate + " 00:00:00'" : "",
+                            !string.IsNullOrEmpty(enddate) ? " AND t1.voucherdate <='" + enddate + " 23:59:59'" : ""));
             return JsonConvert.SerializeObject(new
             {
                 status = dt.Rows.Count > 0 ? "success" : "error",
@@ -227,7 +241,7 @@ public class CTLHandler : IHttpHandler
         }
     }
 
-    public string GetRecordOut(string cid, string batch, bool ismark)
+    public string GetRecordOut(string cid, string batch, bool ismark, string startdate, string enddate)
     {
         var list = new List<Result>();
         try
@@ -241,8 +255,11 @@ public class CTLHandler : IHttpHandler
                     LEFT JOIN dbo.AA_Warehouse t21 ON t2.idwarehouse=t21.id
                     LEFT JOIN dbo.AA_Inventory t4 ON t2.idinventory=t4.id
                     LEFT JOIN dbo.AA_Unit T5 ON T4.idunit=T5.ID
-                    WHERE T1.idvouchertype=21 AND ISNULL(t2.pubuserdefnvc1,'') {2} AND t2.idinventory='{0}' {1}", cid, (!string.IsNullOrEmpty(batch) ? " AND t2.batch='" + batch + "'" : ""),
-                    ismark ? "<>'是'" : "='是'"));
+                    WHERE T1.idvouchertype=21 AND ISNULL(t2.pubuserdefnvc1,'') {2} AND t2.idinventory='{0}' {1} {3} {4}", cid,
+                    (!string.IsNullOrEmpty(batch) ? " AND t2.batch='" + batch + "'" : ""),
+                    ismark ? "<>'是'" : "='是'",
+                    !string.IsNullOrEmpty(startdate) ? " AND t1.voucherdate >='" + startdate + " 00:00:00'" : "",
+                    !string.IsNullOrEmpty(enddate) ? " AND t1.voucherdate <='" + enddate + " 23:59:59'" : ""));
             return JsonConvert.SerializeObject(new
             {
                 status = dt.Rows.Count > 0 ? "success" : "error",

@@ -12,9 +12,7 @@
     <title>销货单</title>
     <!-- 引入样式 -->
     <link rel="stylesheet" href="./css/element-ui-index.css" />
-    <link rel="stylesheet" href="./css/theme-chalk-index.css">
-    <!-- 引入组件库 -->
-    <%--<link rel="stylesheet" href="./assets/icon/iconfont.css" />--%>
+    <link rel="stylesheet" href="./css/theme-chalk-index.css" />
     <link href="./css/tabulator.min.css" rel="stylesheet" />
     <style>
         .el-dialog__body {
@@ -118,6 +116,20 @@
                                   <el-col :span="12" :offset="2">
                                     <el-form-item>
                                      <el-button size="medium" type="danger" :disabled="!form.isCancelMark" @click="saveBill">取消打标</el-button>
+                                    </el-form-item> 
+                                </el-col>
+                            </el-row> 
+                             <el-row>
+                                <el-col :span="8">
+                                    <el-form-item label="日期">
+                                     <el-date-picker
+                                          style="width:100%"
+                                          v-model="form.date"
+                                          type="daterange"
+                                          range-separator="至"
+                                          start-placeholder="开始日期"
+                                          end-placeholder="结束日期">
+                                    </el-date-picker>
                                     </el-form-item> 
                                 </el-col>
                             </el-row> 
